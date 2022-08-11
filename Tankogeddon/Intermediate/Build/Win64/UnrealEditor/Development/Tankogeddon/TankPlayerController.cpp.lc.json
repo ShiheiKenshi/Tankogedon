@@ -1,0 +1,15 @@
+{
+    "Version": "1.1",
+    "Data": {
+        "Source": "f:\\tankogedon\\tankogedon\\tankogeddon\\source\\tankogeddon\\tankplayercontroller.cpp",
+        "ProvidedModule": "",
+        "PCH": "f:\\tankogedon\\tankogedon\\tankogeddon\\intermediate\\build\\win64\\tankogeddoneditor\\development\\engine\\sharedpch.engine.shadowerrors.h.pch",
+        "Includes": [
+            "f:\\tankogedon\\tankogedon\\tankogeddon\\intermediate\\build\\win64\\unrealeditor\\development\\tankogeddon\\definitions.tankogeddon.h",
+            "f:\\tankogedon\\tankogedon\\tankogeddon\\source\\tankogeddon\\tankplayercontroller.h",
+            "f:\\tankogedon\\tankogedon\\tankogeddon\\intermediate\\build\\win64\\unrealeditor\\inc\\tankogeddon\\tankplayercontroller.generated.h"
+        ],
+        "ImportedModules": [],
+        "ImportedHeaderUnits": []
+    }
+}

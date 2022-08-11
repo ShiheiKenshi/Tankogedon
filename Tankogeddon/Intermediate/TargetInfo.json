@@ -1,0 +1,14 @@
+{
+	"Targets": [
+		{
+			"Name": "Tankogeddon",
+			"Path": "F:\\Tankogedon\\Tankogedon\\Tankogeddon\\Source\\Tankogeddon.Target.cs",
+			"Type": "Game"
+		},
+		{
+			"Name": "TankogeddonEditor",
+			"Path": "F:\\Tankogedon\\Tankogedon\\Tankogeddon\\Source\\TankogeddonEditor.Target.cs",
+			"Type": "Editor"
+		}
+	]
+}
