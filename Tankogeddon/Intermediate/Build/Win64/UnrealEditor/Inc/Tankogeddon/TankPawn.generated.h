@@ -58,7 +58,7 @@ public: \
 	DEFINE_DEFAULT_CONSTRUCTOR_CALL(ATankPawn)
 
 
-#define FID_Tankogeddon_Source_Tankogeddon_TankPawn_h_9_PROLOG
+#define FID_Tankogeddon_Source_Tankogeddon_TankPawn_h_10_PROLOG
 #define FID_Tankogeddon_Source_Tankogeddon_TankPawn_h_13_GENERATED_BODY_LEGACY \
 PRAGMA_DISABLE_DEPRECATION_WARNINGS \
 public: \
