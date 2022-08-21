@@ -121,6 +121,8 @@ void ATankPawn::SetupCannon(TSubclassOf<ACannon> newCannonClass)
 		Cannon->Destroy();
 	}
 
+	FirstSlotCannonClass = newCannonClass;
+
 	FActorSpawnParameters spawnParams;
 	spawnParams.Instigator = this;
 	spawnParams.Owner = this;
@@ -129,9 +131,28 @@ void ATankPawn::SetupCannon(TSubclassOf<ACannon> newCannonClass)
 	Cannon->AttachToComponent(CannonSetupPoint, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
 }
 
+void ATankPawn::ChangeFirstSlotCannon()
+{
+	SetupCannon(FirstSlotCannonClass);
+}
+
+void ATankPawn::ChangeCannonSlots()
+{
+	ChangeSlotCannonClass = FirstSlotCannonClass;
+	FirstSlotCannonClass = SecondSlotCannonClass;
+	SecondSlotCannonClass = ChangeSlotCannonClass;
+
+	SetupCannon(FirstSlotCannonClass);
+}
+
+ACannon* ATankPawn::GetCannon() const
+{
+	return Cannon;
+}
+
 void ATankPawn::BeginPlay()
 {
 	Super::BeginPlay();
 	TankController = Cast<ATankPlayerController>( GetController());
-	SetupCannon(CannonClass);
+	SetupCannon(FirstSlotCannonClass);
 }

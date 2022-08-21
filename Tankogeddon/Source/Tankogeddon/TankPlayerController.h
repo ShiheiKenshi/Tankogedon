@@ -26,6 +26,7 @@ protected:
 
 	void Fire();
 	void FireSpecial();
+	void ChangeCannonSlots();
 
 	FVector MousePosition;
 };

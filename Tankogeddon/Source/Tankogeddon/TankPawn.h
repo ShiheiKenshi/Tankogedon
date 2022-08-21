@@ -26,6 +26,9 @@ public:
 	void FireSpecial();
 
 	void SetupCannon(TSubclassOf<ACannon> newCannonClass);
+	void ChangeFirstSlotCannon();
+	void ChangeCannonSlots();
+	ACannon* GetCannon() const;
 
 protected:
 
@@ -50,7 +53,13 @@ protected:
 	ACannon* Cannon;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cannon")
-	TSubclassOf<ACannon> CannonClass;
+	TSubclassOf<ACannon> FirstSlotCannonClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cannon")
+	TSubclassOf<ACannon> SecondSlotCannonClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cannon")
+	TSubclassOf<ACannon> ChangeSlotCannonClass;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Cannon")
 	class UArrowComponent* CannonSetupPoint;

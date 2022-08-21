@@ -1,6 +1,8 @@
 #include "Cannon.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/ArrowComponent.h"
+#include "Projectile.h"
+#include "DrawDebugHelpers.h"
 
 ACannon::ACannon()
 {
@@ -18,6 +20,20 @@ ACannon::ACannon()
 
 void ACannon::Fire()
 {
+	if (Ammo <= 0)
+	{
+		if (Ammunition <= 0)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Orange, "Out of Stock");
+			return;
+		}
+		else
+		{
+			Reload();
+		}
+		
+	}
+
 	if (!IsReadyToFire())
 	{
 		return;
@@ -25,37 +41,16 @@ void ACannon::Fire()
 
 	if (CannonType == ECannonType::FireProjectile)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, "Fire projectile");
-		Ammo -= 1;
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, FString::Printf(TEXT("Ammo: %d"), Ammo));
-		
+		ProjectileFire();
 	}
 	if (CannonType == ECannonType::FireTrace)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "Fire trace");
-		Ammo -= 1;
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, FString::Printf(TEXT("Ammo: %d"), Ammo));
-		
+		TraceFire();
 	}
-	bReadyToFire = false;
-	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &ACannon::Reload, FireRate, false);
 
 	if (CannonType == ECannonType::FireRapid)
 	{
-		if (Ammunition > 0)
-		{
-			const ANSICHAR* numberShots[] = { "error", "fifth", "fourth", "third","second","first" };
-			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("Fire %s rapid shot"), /*Ammunition*/numberShots[Ammunition]));
-			Ammunition -= 1;
-		}
-		else
-		{
-			Ammunition = 5;
-			Ammo -= 1;
-			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, FString::Printf(TEXT("Ammo: %d"), Ammo));
-			bReadyToFire = false;
-			GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &ACannon::Reload, FireRate, false);
-		}
+		RapidFire();
 	}
 }
 
@@ -74,23 +69,15 @@ void ACannon::FireSpecial()
 		
 	if (CannonType == ECannonType::FireProjectile)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, "Fire Bomb");
-		AmmoSpecial -= 1;
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, FString::Printf(TEXT("Special Ammo: %d"), AmmoSpecial));
-		
+		BombFire();
 	}
 	if (CannonType==ECannonType::FireTrace)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "Fire laser");
-		AmmoSpecial -= 1;
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, FString::Printf(TEXT("Special Ammo: %d"), AmmoSpecial));
-		
+		LaserFire();		
 	}
 	if (CannonType == ECannonType::FireRapid)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, "Fire Bomb");
-		AmmoSpecial -= 1;
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("Special Ammo: %d"), AmmoSpecial));
+		BombFire();
 	}
 	bReadyToFireSpecial = false;
 	GetWorld()->GetTimerManager().SetTimer(ReloadTimerSpecial, this, &ACannon::ReloadSpecial, FireRate, false);
@@ -110,11 +97,20 @@ void ACannon::Reload()
 	}
 	else
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, "Loading Ammo");
-		GetWorld()->GetTimerManager().SetTimer(ReloadAmmoTimer, this, &ACannon::Reload, AmmoReload, false);
-		Ammo += 10;
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, "Loading Complete");
-		return;
+		if (Ammunition>0)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, "Loading Ammo");
+			GetWorld()->GetTimerManager().SetTimer(ReloadAmmoTimer, this, &ACannon::Reload, AmmoReload, false);
+			Ammo += 10;
+			Ammunition--;
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Blue, FString::Printf(TEXT("Ammunition: %d"), Ammunition));
+			return;
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "Out of Stock");
+			return;
+		}
 	}
 }
 
@@ -137,12 +133,130 @@ void ACannon::ReloadSpecial()
 	
 }
 
+void ACannon::ProjectileFire()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, "Fire projectile");
+
+	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
+	
+	if (Projectile)
+	{
+		Projectile->Start();
+	}
+
+	Ammo -= 1;
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, FString::Printf(TEXT("Ammo: %d"), Ammo));
+	bReadyToFire = false;
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &ACannon::Reload, FireRate, false);
+}
+
+void ACannon::RapidFire()
+{
+	GetWorld()->GetTimerManager().SetTimer(RapidFireTimer, this, &ACannon::Rapid, FireRapidRate, true, 0.0f);
+	Ammo--;
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, FString::Printf(TEXT("Ammo: %d"), Ammo));
+	bReadyToFire = false;
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &ACannon::Reload, FireRate, false);
+}
+
+void ACannon::Rapid()
+{
+	if (CurrentAmmo == Shells)
+	{
+		GetWorld()->GetTimerManager().ClearTimer(RapidFireTimer);
+		CurrentAmmo = 0;
+		return;
+	}
+	CurrentAmmo++;
+
+	AProjectile* Projectile = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
+	if (Projectile)
+	{
+		Projectile->Start();
+	}
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("Fire %d rapid shot"), CurrentAmmo));
+}
+
+void ACannon::ReloadAmmunition(int32 AmmoStock)
+{
+	Ammunition += AmmoStock;
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Black, FString::Printf(TEXT("Ammunition: %d"), Ammunition));
+}
+
+void ACannon::TraceFire()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "Fire trace");
+	FHitResult hitResult;
+	FCollisionQueryParams traceParams = FCollisionQueryParams();
+	traceParams.AddIgnoredActor(this);
+	traceParams.bReturnPhysicalMaterial = false;
+	FVector Start = ProjectileSpawnPoint->GetComponentLocation();
+	FVector End = Start + ProjectileSpawnPoint->GetForwardVector() * FireRange;
+
+	if (GetWorld()->LineTraceSingleByChannel(hitResult, Start, End, ECollisionChannel::ECC_Visibility, traceParams))
+	{
+		DrawDebugLine(GetWorld(),Start,hitResult.Location,FColor::Red, false, 1.0f, 0, 10);
+		if (hitResult.GetActor())
+		{
+			AActor* OverlappedActor = hitResult.GetActor();
+			UE_LOG(LogTemp, Warning, TEXT("Actor: %s"), *hitResult.GetActor()->GetName());
+			OverlappedActor->Destroy();
+		}
+	}
+	else
+	{
+		DrawDebugLine(GetWorld(), Start, End, FColor::Yellow, false, 1.0f, 0, 5);
+	}
+
+	Ammo -= 1;
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, FString::Printf(TEXT("Ammo: %d"), Ammo));
+	bReadyToFire = false;
+	GetWorld()->GetTimerManager().SetTimer(ReloadTimer, this, &ACannon::Reload, FireRate, false);
+}
+
+void ACannon::LaserFire()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "Fire laser");
+	FHitResult hitResult;
+	FCollisionQueryParams laserParams = FCollisionQueryParams();
+	laserParams.AddIgnoredActor(this);
+	laserParams.bReturnPhysicalMaterial = false;
+	FVector Start = ProjectileSpawnPoint->GetComponentLocation();
+	FVector End = Start + ProjectileSpawnPoint->GetForwardVector() * FireRange;
+
+	if (GetWorld()->LineTraceSingleByChannel(hitResult, Start, End, ECollisionChannel::ECC_Visibility, laserParams))
+	{
+		DrawDebugLine(GetWorld(), Start, hitResult.Location, FColor::Red, false, 1.0f, 0, 50);
+		if (hitResult.GetActor())
+		{
+			AActor* OverlappedActor = hitResult.GetActor();
+			UE_LOG(LogTemp, Warning, TEXT("Actor: %s"), *hitResult.GetActor()->GetName());
+			OverlappedActor->Destroy();
+		}
+	}
+	else
+	{
+		DrawDebugLine(GetWorld(), Start, End, FColor::Blue, false, 1.0f, 0, 50);
+	}
+	AmmoSpecial -= 1;
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, FString::Printf(TEXT("Special Ammo: %d"), AmmoSpecial));
+}
+
+void ACannon::BombFire()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, "Fire Bomb");
+	AProjectile* Bomb = GetWorld()->SpawnActor<AProjectile>(ProjectileClass, ProjectileSpawnPoint->GetComponentLocation(), ProjectileSpawnPoint->GetComponentRotation());
+	if (Bomb)
+	{
+		Bomb->Start();
+	}
+	AmmoSpecial -= 1;
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Purple, FString::Printf(TEXT("Special Ammo: %d"), AmmoSpecial));
+}
+
 void ACannon::BeginPlay()
 {
 	Super::BeginPlay();
 	bReadyToFire = true;
 	bReadyToFireSpecial = true;
-	Ammo = 10;
-	AmmoSpecial = 5;
-	
 }

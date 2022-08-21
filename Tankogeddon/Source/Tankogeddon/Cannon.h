@@ -16,10 +16,19 @@ public:
 	void Fire();
 	bool IsReadyToFire();
 	void Reload();
+	void Rapid();
+	void ReloadAmmunition(int32 AmmoStock);
 
 	void FireSpecial();
 	bool IsReadyToFireSpecial();
 	void ReloadSpecial();
+
+	void ProjectileFire();
+	void RapidFire();
+	void TraceFire();
+
+	void LaserFire();
+	void BombFire();
 
 protected:
 	virtual void BeginPlay() override;
@@ -34,6 +43,9 @@ protected:
 	ECannonType CannonType = ECannonType::FireProjectile;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire params")
+	TSubclassOf<class AProjectile> ProjectileClass;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire params")
 	float FireRate = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire params")
@@ -43,16 +55,22 @@ protected:
 	float FireRange = 1000.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire params")
-	int Damage = 1;
+	int32 Damage = 1;
 
-	UPROPERTY()
-	int Ammo = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
+	int32 Ammo = 10;
 
-	UPROPERTY()
-	int AmmoSpecial = 0;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
+	int32 AmmoSpecial = 5;
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire params")
-	int Ammunition = 5;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
+	int32 Shells = 5;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
+	float FireRapidRate = 0.1f;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
+	int32 Ammunition = 0;
 
 	bool bReadyToFire = true;
 	bool bReadyToFireSpecial = true;
@@ -60,5 +78,8 @@ protected:
 	FTimerHandle ReloadTimer;
 	FTimerHandle ReloadTimerSpecial;
 	FTimerHandle ReloadAmmoTimer;
+	FTimerHandle RapidFireTimer;
 
+private:
+	int32 CurrentAmmo = 0;
 };
