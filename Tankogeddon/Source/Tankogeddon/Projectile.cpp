@@ -1,5 +1,8 @@
 #include "Projectile.h"
 #include "Components/StaticMeshComponent.h"
+#include "Components/SphereComponent.h"
+#include "DamageTaker.h"
+#include "GameStruct.h"
 
 AProjectile::AProjectile()
 {
@@ -8,9 +11,14 @@ AProjectile::AProjectile()
 	USceneComponent* SceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
 	RootComponent = SceneComp;
 
+	SphereCollision = CreateDefaultSubobject<USphereComponent>(TEXT("BoxCollision"));
+	SphereCollision->SetupAttachment(SceneComp);
+	SphereCollision->SetCollisionObjectType(ECollisionChannel::ECC_GameTraceChannel1);
+	SphereCollision->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnMeshOverlapBegin);
+
 	ProjectileMesh = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("ProjectileMesh"));
-	ProjectileMesh->SetupAttachment(SceneComp);
-	ProjectileMesh->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnMeshOverlapBegin);
+	ProjectileMesh->SetupAttachment(SphereCollision);
+	//ProjectileMesh->OnComponentBeginOverlap.AddDynamic(this, &AProjectile::OnMeshOverlapBegin);
 }
 
 void AProjectile::Start()
@@ -26,12 +34,26 @@ void AProjectile::Move()
 
 void AProjectile::OnMeshOverlapBegin(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-
-	if (OtherActor)
+	AActor* owner = GetOwner();
+	AActor* OwnerByOwner = owner != nullptr ? owner->GetOwner() : nullptr;
+	if (OtherActor != owner || OtherActor != OwnerByOwner)
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Overlapped actor: %s"), *OtherActor->GetName());
-		OtherActor->Destroy();
-		Destroy();
+		IDamageTaker* DamageActor = Cast<IDamageTaker>(OtherActor);
+		if (DamageActor)
+		{
+			FDamageData damageData;
+			damageData.DamageValue = Damage;
+			damageData.Instigator = owner;
+			damageData.DamageMaker = this;
+
+			DamageActor->TakeDamage(damageData);
+		}
+		else
+		{
+			UE_LOG(LogTemp, Warning, TEXT("Overlapped actor: %s"), *OtherActor->GetName());
+			OtherActor->Destroy();
+			Destroy();
+		}
 	}
 	
 }

@@ -3,6 +3,8 @@
 #include "Components/ArrowComponent.h"
 #include "Projectile.h"
 #include "DrawDebugHelpers.h"
+#include "GameStruct.h"
+#include "DamageTaker.h"
 
 ACannon::ACannon()
 {
@@ -186,10 +188,13 @@ void ACannon::ReloadAmmunition(int32 AmmoStock)
 void ACannon::TraceFire()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Red, "Fire trace");
+	
 	FHitResult hitResult;
 	FCollisionQueryParams traceParams = FCollisionQueryParams();
+	
 	traceParams.AddIgnoredActor(this);
 	traceParams.bReturnPhysicalMaterial = false;
+	
 	FVector Start = ProjectileSpawnPoint->GetComponentLocation();
 	FVector End = Start + ProjectileSpawnPoint->GetForwardVector() * FireRange;
 
@@ -199,8 +204,22 @@ void ACannon::TraceFire()
 		if (hitResult.GetActor())
 		{
 			AActor* OverlappedActor = hitResult.GetActor();
-			UE_LOG(LogTemp, Warning, TEXT("Actor: %s"), *hitResult.GetActor()->GetName());
-			OverlappedActor->Destroy();
+			IDamageTaker* DamageActor = Cast<IDamageTaker>(OverlappedActor);
+			if (DamageActor)
+			{
+				FDamageData damageData;
+				damageData.DamageValue = Damage;
+				damageData.Instigator = this;
+				damageData.DamageMaker = this;
+
+				DamageActor->TakeDamage(damageData);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("Overlapped actor: %s"), *hitResult.GetActor()->GetName());
+				OverlappedActor->Destroy();
+				Destroy();
+			}
 		}
 	}
 	else

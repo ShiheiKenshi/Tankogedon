@@ -18,6 +18,9 @@ public:
 protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
 	class UStaticMeshComponent* ProjectileMesh;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Component")
+	class USphereComponent* SphereCollision;
 	
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement")
 	float MoveSpeed = 100.0f;

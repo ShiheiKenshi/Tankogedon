@@ -1,9 +1,8 @@
-// Fill out your copyright notice in the Description page of Project Settings.
-
 #pragma once
 
 #include "CoreMinimal.h"
 #include "UObject/NoExportTypes.h"
+#include "UObject/ObjectMacros.h"
 #include "GameStruct.generated.h"
 
 UENUM(BlueprintType)
@@ -14,6 +13,17 @@ enum class ECannonType : uint8
 	FireRapid = 2 UMETA (DisplayName "Use Rapid shots")
 };
 
+USTRUCT()
+struct FDamageData
+{
+	GENERATED_BODY();
+
+	float DamageValue;
+
+	AActor* Instigator;
+
+	AActor* DamageMaker;
+};
 
 UCLASS()
 class TANKOGEDDON_API UGameStruct : public UObject

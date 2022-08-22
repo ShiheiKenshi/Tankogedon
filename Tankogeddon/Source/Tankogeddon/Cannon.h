@@ -30,6 +30,8 @@ public:
 	void LaserFire();
 	void BombFire();
 
+
+
 protected:
 	virtual void BeginPlay() override;
 
@@ -55,7 +57,7 @@ protected:
 	float FireRange = 1000.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Fire params")
-	int32 Damage = 1;
+	float Damage = 1.0f;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Ammo")
 	int32 Ammo = 10;

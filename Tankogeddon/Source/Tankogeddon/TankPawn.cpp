@@ -8,10 +8,15 @@
 #include <Math/UnrealMathUtility.h>
 #include "Components/ArrowComponent.h"
 #include "Cannon.h"
+#include "HealthComponent.h"
+#include "Components/SceneComponent.h"
 
 ATankPawn::ATankPawn()
 {
 	PrimaryActorTick.bCanEverTick = true;
+
+	//USceneComponent* SceneComp = CreateDefaultSubobject<USceneComponent>(TEXT("RootComponent"));
+	//RootComponent = SceneComp;
 
 	BoxCollision = CreateDefaultSubobject<UBoxComponent>(TEXT("RootComponent"));
 	RootComponent = BoxCollision;
@@ -34,6 +39,10 @@ ATankPawn::ATankPawn()
 
 	CannonSetupPoint = CreateDefaultSubobject<UArrowComponent>(TEXT("CannonSetupPoint"));
 	CannonSetupPoint->SetupAttachment(TurretMesh);
+
+	HealthComponent = CreateDefaultSubobject<UHealthComponent>(TEXT("HealthComponent"));
+	HealthComponent->OnHealthChanged.AddUObject(this, &ATankPawn::DamageTaked);
+	HealthComponent->OnDie.AddUObject(this, &ATankPawn::Die);
 }
 
 
@@ -148,6 +157,25 @@ void ATankPawn::ChangeCannonSlots()
 ACannon* ATankPawn::GetCannon() const
 {
 	return Cannon;
+}
+
+void ATankPawn::TakeDamage(FDamageData DamageData)
+{
+	HealthComponent->TakeDamage(DamageData);
+}
+
+void ATankPawn::Die()
+{
+	if (Cannon)
+	{
+		Cannon->Destroy();
+	}
+	Destroy();
+}
+
+void ATankPawn::DamageTaked(float Value)
+{
+	UE_LOG(LogTemp, Warning, TEXT("Health: %f"), HealthComponent->GetHealth());
 }
 
 void ATankPawn::BeginPlay()
